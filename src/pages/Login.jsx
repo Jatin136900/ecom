@@ -1,37 +1,27 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
-// Firebase
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../FireBase";
 
 function Login() {
-  const [data, setData] = useState({
-    email: "",
-    password: "",
-  });
-
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isError, setIsError] = useState(null);
   const navigate = useNavigate();
-
-  function handleChange(e) {
-    const { name, value } = e.target;
-    setData({ ...data, [name]: value });
-  }
 
   async function handleSubmit(e) {
     e.preventDefault();
     setIsError(null);
 
-    if (!data.email) return setIsError("Email is required");
-    if (!data.password) return setIsError("Password is required");
+    if (!email || !password) {
+      return setIsError("Please fill all fields");
+    }
 
     try {
       setIsSubmitting(true);
 
-      // Firebase login
-      await signInWithEmailAndPassword(auth, data.email, data.password);
+      await signInWithEmailAndPassword(auth, email, password);
 
       navigate("/");
     } catch (error) {
@@ -54,9 +44,8 @@ function Login() {
             <input
               type="email"
               placeholder="Enter Email"
-              name="email"
-              value={data.email}
-              onChange={handleChange}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
 
@@ -65,22 +54,17 @@ function Login() {
             <input
               type="password"
               placeholder="Enter Password"
-              name="password"
-              value={data.password}
-              onChange={handleChange}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
           </div>
 
-          <div className="form-group">
-            <button type="submit" className={isSubmitting ? "inProcess" : ""}>
-              {isSubmitting ? "Logging In..." : "Login"}
-            </button>
-          </div>
+          <button type="submit" className={isSubmitting ? "inProcess" : ""}>
+            {isSubmitting ? "Logging In..." : "Login"}
+          </button>
         </form>
 
-        <p>
-          New User? <Link to="/register">Register Here</Link>
-        </p>
+        <p>New User? <Link to="/register">Register Here</Link></p>
       </div>
     </div>
   );

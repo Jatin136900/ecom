@@ -1,8 +1,9 @@
-
-
 import { useState } from "react";
-import instance from "../config/axiosConfig";
 import { Link, useNavigate } from "react-router-dom";
+
+// Firebase
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../FireBase";
 
 function Register() {
   const [data, setData] = useState({
@@ -12,6 +13,7 @@ function Register() {
     email: "",
     password: "",
   });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isError, setIsError] = useState(null);
   const navigate = useNavigate();
@@ -23,19 +25,22 @@ function Register() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    setIsError(null);
+
+    if (!data.email) return setIsError("Email is required");
+    if (!data.password) return setIsError("Password is required");
+
     try {
       setIsSubmitting(true);
-      const response = await instance.post("/auth/register", data);
-      if (
-        response.status === 201 &&
-        response.message === "Data added successfully"
-      ) {
-        navigate("/login");
-      }
+
+      // 🔥 Firebase Registration
+      await createUserWithEmailAndPassword(auth, data.email, data.password);
+
+      // Success → redirect to login
+      navigate("/login");
     } catch (error) {
       console.log(error);
       setIsError(error.message);
-      setIsSubmitting(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -43,10 +48,12 @@ function Register() {
 
   return (
     <div className="form-container">
-      {isError && <p>{isError}</p>}
+      {isError && <p style={{ color: "red" }}>{isError}</p>}
+
       <h2>Register into Ecommerce</h2>
+
       <div className="form-wrapper">
-        <form action="" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="name">Name</label>
             <input
@@ -99,7 +106,7 @@ function Register() {
             <label htmlFor="password">Password</label>
             <input
               type="password"
-              placeholder="Enter password"
+              placeholder="Enter Password"
               name="password"
               id="password"
               value={data.password}
@@ -113,6 +120,7 @@ function Register() {
             </button>
           </div>
         </form>
+
         <p>
           Already Registered? <Link to="/login">Login Here</Link>
         </p>
@@ -122,4 +130,3 @@ function Register() {
 }
 
 export default Register;
-
